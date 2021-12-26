@@ -13,9 +13,6 @@ from flask import Flask
 from io import BytesIO
 import cv2
 
-# from keras.models import load_model
-# import h5py
-# from keras import __version__ as keras_version
 import torch
 from torch.autograd import Variable
 import torchvision.transforms as transforms
@@ -27,7 +24,6 @@ model = None
 prev_image_array = None
 
 transformations = transforms.Compose([transforms.Lambda(lambda x: (x / 255.0) - 0.5)])
-
 
 class SimplePIController:
     def __init__(self, Kp, Ki):
@@ -54,9 +50,8 @@ controller = SimplePIController(0.1, 0.002)
 set_speed = 15
 controller.set_desired(set_speed)
 
-
 @sio.on('telemetry')
-def telemetry(sid, data):
+def telemetry(sid, data): 
     if data:
         # The current steering angle of the car
         steering_angle = float(data["steering_angle"])
@@ -72,19 +67,17 @@ def telemetry(sid, data):
         image = cv2.cvtColor(image, cv2.COLOR_BGR2YUV)
         image = transformations(image)
         image = torch.Tensor(image)
-        print(image.shape)
         image = image.view(1, 3, 70, 320)
         image = Variable(image)
-        print(image.shape)
         steering_angle = model(image).view(-1).data.numpy()[0]
 
         throttle = controller.update(float(speed))
 
-        print(steering_angle, throttle)
         if speed > 20:
             brakes = 1
         else: 
             brakes = 0
+        # print(steering_angle, throttle, brakes)
         send_control(steering_angle, throttle, brakes)
 
         # save frame
@@ -109,7 +102,7 @@ def send_control(steering_angle, throttle, brakes=0):
         data={
             'steering_angle': steering_angle.__str__(),
             'throttle': throttle.__str__(),
-            'brakes': brakes
+            'brake': brakes
         },
         skip_sid=True)
 

@@ -28,7 +28,6 @@ class NetworkDense(nn.Module):
     def forward(self, input):  
         input = input.view(input.size(0), 3, 70, 320)
         output = self.conv_layers(input)
-        print(output.shape)
         output = output.view(output.size(0), -1)
         output = self.linear_layers(output)
         return output
@@ -56,7 +55,6 @@ class NetworkLight(nn.Module):
     def forward(self, input):
         input = input.view(input.size(0), 3, 70, 320)
         output = self.conv_layers(input)
-        print(output.shape)
         output = output.view(output.size(0), -1)
         output = self.linear_layers(output)
         return output
