@@ -1,8 +1,9 @@
 import argparse
 import base64
-from datetime import datetime
+from datetime import datetime, time
 import os
 import shutil
+import time
 
 import numpy as np
 import socketio
@@ -51,9 +52,13 @@ set_speed = 15
 controller.set_desired(set_speed)
 
 @sio.on('telemetry')
-def telemetry(sid, data): 
+def telemetry(sid, data):
     if data:
         # The current steering angle of the car
+        print()
+        for key,val in data.items():
+            print(key,"-",val)
+        print()
         steering_angle = float(data["steering_angle"])
         # The current throttle of the car
         throttle = float(data["throttle"])
@@ -73,11 +78,13 @@ def telemetry(sid, data):
 
         throttle = controller.update(float(speed))
 
-        if speed > 20:
+        if speed > controller.set_point:
             brakes = 1
+            throttle = -1
         else: 
             brakes = 0
-        # print(steering_angle, throttle, brakes)
+            throttle += 0.1
+        
         send_control(steering_angle, throttle, brakes)
 
         # save frame
@@ -102,7 +109,7 @@ def send_control(steering_angle, throttle, brakes=0):
         data={
             'steering_angle': steering_angle.__str__(),
             'throttle': throttle.__str__(),
-            'brake': brakes
+            'brake': brakes.__str__()
         },
         skip_sid=True)
 
@@ -137,7 +144,6 @@ if __name__ == '__main__':
         print("RECORDING THIS RUN ...")
     else:
         print("NOT RECORDING THIS RUN ...")
-
     # wrap Flask application with engineio's middleware
     app = socketio.Middleware(sio, app)
 
