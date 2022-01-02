@@ -1,4 +1,6 @@
 import torch.nn as nn
+IMG_HEIGHT = 320
+IMG_WIDTH = 70
 
 class NetworkDense(nn.Module):
 
@@ -48,12 +50,12 @@ class NetworkLight(nn.Module):
             nn.Linear(in_features=48*4*19, out_features=50),
             nn.ELU(),
             nn.Linear(in_features=50, out_features=10),
-            nn.Linear(in_features=10, out_features=1)
+            nn.Linear(in_features=10, out_features=3)
         )
         
 
     def forward(self, input):
-        input = input.view(input.size(0), 3, 70, 320)
+        input = input.view(input.size(0), 3, IMG_HEIGHT, IMG_WIDTH)
         output = self.conv_layers(input)
         output = output.view(output.size(0), -1)
         output = self.linear_layers(output)
