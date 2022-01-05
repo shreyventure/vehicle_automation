@@ -78,9 +78,8 @@ while True:
                 image = Variable(image)
                 output = model(image).view(-1).data.numpy()
 
-                val = 0
-                main_steering_angle = float(output[0]) + val if float(output[0]) < 0 else float(output[0]) - val
-                main_speed = abs(interp(float(output[1]), [-1, 1], [-max_speed, max_speed]))
+                main_steering_angle = float(output[0])
+                main_speed = interp(float(output[1]), [0, 1], [0, max_speed])
                 main_brake = float(output[2])
                 print(f"OUTPUT = {main_steering_angle}, {main_speed}, {main_brake}")
 
