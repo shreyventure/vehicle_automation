@@ -27,12 +27,10 @@ boxes = torch.tensor(boxes)
 with Image.open(img_path) as img_pil:
     img = transforms.ToTensor()(img_pil)
     img = img * 255
-    print(img.numpy())
     img = img.type(torch.uint8)
     img = img.unsqueeze(0)
 
-    drawn_boxes = draw_bounding_boxes(image=img[0], boxes= boxes, labels=results.pandas().xyxy[0]['name'], colors=colors.getColors(labels))
-
+    drawn_boxes = draw_bounding_boxes(image=img[0], boxes= boxes, labels=results.pandas().xyxy[0]['name'], colors=colors.getColors(labels), width=2)
     tensor_to_pil = transforms.ToPILImage()(drawn_boxes.squeeze(0))
 
     pic = np.array(tensor_to_pil)
@@ -41,7 +39,6 @@ with Image.open(img_path) as img_pil:
     height = int(pic.shape[0] * scale_percent / 100)
     dim = (width, height)
     pic = cv2.resize(pic, dim, interpolation = cv2.INTER_AREA)
-    print(pic)
-    cv2.imshow('dcdf', pic)
+    cv2.imshow('detections', pic)
     cv2.waitKey(-1)
     cv2.destroyAllWindows()
