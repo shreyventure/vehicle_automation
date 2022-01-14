@@ -5,6 +5,8 @@ import numpy as np
 import keyboard
 import os
 import torch
+from torchvision.utils import draw_bounding_boxes
+from torchvision import transforms
 
 model = torch.hub.load('ultralytics/yolov5', 'yolov5s', pretrained=True)
 
@@ -37,19 +39,30 @@ while True:
             airsim.write_pfm('py1.pfm', airsim.get_pfm_array(response))
         else:
             img1d = np.frombuffer(response.image_data_uint8, dtype=np.uint8)
-            img_rgb = img1d.reshape(response.height, response.width, 3)
-            cv2.imwrite('new.png', img_rgb)
+            img = img1d.reshape(response.height, response.width, 3)
+            
+            results = model(img)
+            res = results.xyxy[0]
+            labels = results.pandas().xyxy[0]['name']
 
-            results = model(['new.png'])
+            boxes = []
+            for ele in res:
+                boxes.append(list(ele[:4]))
 
-            results.print()
-            results.save()
-            det = cv2.imread('runs/detect/exp/new.jpg')
-            cv2.imshow('detected', det)
+            boxes = torch.tensor(boxes)
+
+            img = transforms.ToTensor()(img.copy())
+            img = img * 255
+            img = img.type(torch.uint8)
+            img = img.unsqueeze(0)
+
+            drawn_boxes = draw_bounding_boxes(image=img[0], boxes= boxes, labels=results.pandas().xyxy[0]['name'], width=2, colors=['blue' for _ in range(len(labels))])
+            
+            tensor_to_pil = transforms.ToPILImage()(drawn_boxes.squeeze(0))
+            pic = np.array(tensor_to_pil)
+            
+            cv2.imshow('detections', pic)
             cv2.waitKey(1)
-
-            os.remove('runs/detect/exp/new.jpg')
-            os.rmdir('runs/detect/exp')
 
         client.setCarControls(car_controls)
 

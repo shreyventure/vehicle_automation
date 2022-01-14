@@ -9,7 +9,7 @@ import numpy as np
 model = torch.hub.load('ultralytics/yolov5', 'yolov5s', pretrained=True)
 # model = torch.hub.load("VCasecnikovs/Yet-Another-YOLOv4-Pytorch", "yolov4", pretrained=True)
 
-img_path = 'C:/Users/shreyas/OneDrive/Desktop/nyc.jpg'
+img_path = 'C:/Users/shreyas/OneDrive/Desktop/cars.jpg'
 img = cv2.imread(img_path)
 
 results = model(img)
@@ -33,7 +33,7 @@ with Image.open(img_path) as img_pil:
     tensor_to_pil = transforms.ToPILImage()(drawn_boxes.squeeze(0))
 
     pic = np.array(tensor_to_pil)
-    scale_percent = 60 # percent of original size
+    scale_percent = 100 # percent of original size
     width = int(pic.shape[1] * scale_percent / 100)
     height = int(pic.shape[0] * scale_percent / 100)
     dim = (width, height)
