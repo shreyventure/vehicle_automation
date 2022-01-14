@@ -5,6 +5,7 @@ from torchvision import transforms
 from PIL import Image
 import cv2
 from colors import colors
+import numpy as np
 
 model = torch.hub.load('ultralytics/yolov5', 'yolov5s', pretrained=True)
 # model = torch.hub.load("VCasecnikovs/Yet-Another-YOLOv4-Pytorch", "yolov4", pretrained=True)
@@ -26,10 +27,21 @@ boxes = torch.tensor(boxes)
 with Image.open(img_path) as img_pil:
     img = transforms.ToTensor()(img_pil)
     img = img * 255
+    print(img.numpy())
     img = img.type(torch.uint8)
     img = img.unsqueeze(0)
 
     drawn_boxes = draw_bounding_boxes(image=img[0], boxes= boxes, labels=results.pandas().xyxy[0]['name'], colors=colors.getColors(labels))
 
     tensor_to_pil = transforms.ToPILImage()(drawn_boxes.squeeze(0))
-    tensor_to_pil.show()
+
+    pic = np.array(tensor_to_pil)
+    scale_percent = 60 # percent of original size
+    width = int(pic.shape[1] * scale_percent / 100)
+    height = int(pic.shape[0] * scale_percent / 100)
+    dim = (width, height)
+    pic = cv2.resize(pic, dim, interpolation = cv2.INTER_AREA)
+    print(pic)
+    cv2.imshow('dcdf', pic)
+    cv2.waitKey(-1)
+    cv2.destroyAllWindows()
