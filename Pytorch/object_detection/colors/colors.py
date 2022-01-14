@@ -6,7 +6,7 @@ def getColors(lables) -> list:
     i = 0
     for ele in lables_uni:
         d[ele] = colors[i]
-        i += 1
+        i  = (i + 1) % len(colors)
 
     ret_colors = []
     for ele in lables:

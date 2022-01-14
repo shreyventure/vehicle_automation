@@ -32,5 +32,4 @@ with Image.open(img_path) as img_pil:
     drawn_boxes = draw_bounding_boxes(image=img[0], boxes= boxes, labels=results.pandas().xyxy[0]['name'], colors=colors.getColors(labels))
 
     tensor_to_pil = transforms.ToPILImage()(drawn_boxes.squeeze(0))
-    img_pil.paste(tensor_to_pil, (0,0))
-    img_pil.show()
+    tensor_to_pil.show()
