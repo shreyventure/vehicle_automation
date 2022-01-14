@@ -1,3 +1,4 @@
+import time
 import torch
 from torchvision.utils import draw_bounding_boxes
 from torchvision import transforms
@@ -11,10 +12,10 @@ imgs = ['C:/Users/shreyas/OneDrive/Desktop/nyc.jpg']
 
 results = model(imgs)
 
-res_panda = results.xyxy[0]
+res = results.xyxy[0]
 
 boxes = []
-for ele in res_panda:
+for ele in res:
     boxes.append(list(ele[:4]))
 
 boxes = torch.tensor(boxes)
@@ -25,9 +26,11 @@ img = img * 255
 img = img.type(torch.uint8)
 img = img.unsqueeze(0)
 
-drawn_boxes = draw_bounding_boxes(image=img[0], boxes= boxes)
+drawn_boxes = draw_bounding_boxes(image=img[0], boxes= boxes, labels=results.pandas().xyxy[0]['name'])
 
 tensor_to_pil = transforms.ToPILImage()(drawn_boxes.squeeze(0))
 img_pil.convert('RGBA')
 img_pil.paste(tensor_to_pil, (0,0))
 img_pil.show()
+time.sleep(5)
+img_pil.close
