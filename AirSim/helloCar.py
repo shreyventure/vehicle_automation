@@ -10,6 +10,7 @@ from torch.autograd import Variable
 import torchvision.transforms as transforms
 from model import *
 
+print('[INFO] Importing model')
 model_path = 'model_pt.h5'
 checkpoint = torch.load(model_path, map_location=lambda storage, loc: storage)
 model = checkpoint['model']
@@ -28,6 +29,7 @@ OpticalFlow = 8,
 OpticalFlowVis = 9
 '''
 
+print('[INFO] Connecting to the server')
 client = airsim.CarClient() # https://microsoft.github.io/AirSim/api_docs/html/_modules/airsim/client.html#CarClient
 client.confirmConnection()
 apiControl = True
@@ -46,9 +48,7 @@ while True:
     # print(client.getLidarData())
 
     car_state = client.getCarState()
-    # print("Speed %d, Gear %d" % (car_state.speed, car_state.gear))
     if client.isApiControlEnabled() and car_state.speed < main_speed - 1:
-        # car_controls.brake = main_brake
         car_controls.throttle = 1
         car_controls.steering = main_steering_angle
         client.setCarControls(car_controls)
@@ -66,11 +66,10 @@ while True:
                 print("Type %d, size %d" % (response.image_type, len(response.image_data_float)))
                 airsim.write_pfm('py1.pfm', airsim.get_pfm_array(response))
             else:
-                # print("Type %d, size %d" % (response.image_type, len(response.image_data_uint8)))
                 img1d = np.frombuffer(response.image_data_uint8, dtype=np.uint8) #get numpy array
                 img_rgb = img1d.reshape(response.height, response.width, 3) #reshape array to 3 channel image array H X W X 3
                 image = img_rgb[65:-25, :, :]
-                image = cv2.cvtColor(image, cv2.COLOR_BGR2YUV)
+                # image = cv2.cvtColor(image, cv2.COLOR_BGR2YUV)
                 image = cv2.resize(image, (IMG_WIDTH, IMG_HEIGHT), cv2.INTER_AREA)
                 image = transformations(image)
                 image = torch.Tensor(image)
@@ -78,14 +77,12 @@ while True:
                 image = Variable(image)
                 output = model(image).view(-1).data.numpy()
 
-                main_steering_angle = float(output[0])
-                main_speed = interp(float(output[1]), [0, 1], [0, max_speed])
-                main_brake = float(output[2])
-                print(f"OUTPUT = {main_steering_angle}, {main_speed}, {main_brake}")
+                car_controls.steering = float(output[0])
+                client.setCarControls(car_controls)
+                print(f"OUTPUT = {car_controls.steering}, {main_speed}, {main_brake}")
 
         if client.isApiControlEnabled() and (car_state.speed > main_speed):
             car_controls.throttle = 0
-            # car_controls.brake = 1
             client.setCarControls(car_controls)
 
         if (client.simGetCollisionInfo()).has_collided:

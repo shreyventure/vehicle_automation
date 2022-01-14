@@ -1,10 +1,7 @@
 import torch.nn as nn
-print('Importing tensorflow...')
-from tensorflow.keras import layers
-from tensorflow.keras.models import Sequential
 
-IMG_HEIGHT = 320
-IMG_WIDTH = 70
+IMG_HEIGHT = 70
+IMG_WIDTH = 320
 
 class NetworkDense(nn.Module):
 
@@ -66,6 +63,10 @@ class NetworkLight(nn.Module):
         return output
 
 def nvidia_model():
+    print('Importing tensorflow...')
+    from tensorflow.keras import layers
+    from tensorflow.keras.models import Sequential
+    
     model = Sequential()
     model.add(layers.Lambda(lambda x: x/127.5-1.0, input_shape=(60, 100, 3)))
     # We have a series of 3 5x5 convolutional layers with a stride of 2x2

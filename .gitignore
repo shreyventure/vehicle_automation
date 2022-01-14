@@ -1,3 +1,16 @@
 myenv
 .ipynb_checkpoints
 set_git.sh
+.idea
+bin
+include
+share
+etc
+lib
+.Python
+*.pyc
+data/tusimple
+checkpoints
+output
+*.egg-info
+dist

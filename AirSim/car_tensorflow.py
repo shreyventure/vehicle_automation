@@ -4,12 +4,17 @@ import cv2
 import numpy as np
 import keyboard
 from numpy import interp
+import os
 
-from model import *
+# from model import *
 
-model_path = 'my_model.h5'
-model = nvidia_model()
-model.load_weights(model_path)
+import torch
+
+model = torch.hub.load('ultralytics/yolov5', 'yolov5s', pretrained=True)
+
+# model_path = 'my_model.h5'
+# model = nvidia_model()
+# model.load_weights(model_path)
 
 '''
 Scene = 0, 
@@ -65,16 +70,28 @@ while True:
                 img1d = np.frombuffer(response.image_data_uint8, dtype=np.uint8) #get numpy array
                 img_rgb = img1d.reshape(response.height, response.width, 3) #reshape array to 3 channel image array H X W X 3
                 # img_rgb = img_rgb[65:-25, :, :]
-                image = cv2.cvtColor(img_rgb, cv2.COLOR_BGR2YUV)
-                image = cv2.resize(image, (100, 60), cv2.INTER_AREA)
-                
-                
-                output = model.predict(np.array([image]), batch_size=1)
-                output = output[0]
-                print(f'OUTPUT: {output}')
+                # image = cv2.cvtColor(img_rgb, cv2.COLOR_BGR2RGB)
+                # image = cv2.resize(image, (100, 60), cv2.INTER_AREA)
+                cv2.imwrite('new.png', img_rgb)
 
-                main_steering_angle = float(output[0])
-                car_controls.steering = main_steering_angle
+                results = model(['new.png'])
+
+                results.print()
+                results.save()
+                det = cv2.imread('runs/detect/exp/new.jpg')
+                cv2.imshow('detected', det)
+                cv2.waitKey(100)
+
+                os.remove('runs/detect/exp/new.jpg')
+                os.rmdir('runs/detect/exp')
+                
+                # output = model.predict(np.array([image]), batch_size=1)
+                # output = output[0]
+                # print(f'OUTPUT: {output}')
+
+                # main_steering_angle = float(output[0])
+                # car_controls.steering = main_steering_angle
+
                 # main_speed = interp(float(output[1]), [0, 1], [0, max_speed])
                 # main_brake = float(output[2])
                 # print(f"OUTPUT = {main_steering_angle}, {main_speed}, {main_brake}")
