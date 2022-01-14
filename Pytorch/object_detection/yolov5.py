@@ -1,4 +1,3 @@
-from cProfile import label
 import torch
 from torchvision.utils import draw_bounding_boxes
 from torchvision import transforms
