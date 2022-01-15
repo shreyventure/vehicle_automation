@@ -1,9 +1,6 @@
 import airsim
-import time
 import cv2
 import numpy as np
-import keyboard
-import os
 import torch
 from torchvision.utils import draw_bounding_boxes
 from torchvision import transforms
