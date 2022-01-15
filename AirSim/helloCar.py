@@ -11,7 +11,7 @@ import torchvision.transforms as transforms
 from model import *
 
 print('[INFO] Importing model')
-model_path = 'model_pt.h5'
+model_path = 'models/model_pt.h5'
 checkpoint = torch.load(model_path, map_location=lambda storage, loc: storage)
 model = checkpoint['model']
 transformations = transforms.Compose([transforms.Lambda(lambda x: (x / 255.0) - 0.5)])
