@@ -43,7 +43,8 @@ main_brake = 0
 max_speed = 30
 
 while True:
-    # print(client.getDistanceSensorData().distance)
+    available_distance = client.getDistanceSensorData().distance
+    print(available_distance, car_controls.brake)
     # print(client.getGpsData())
     # print(client.getLidarData())
 
@@ -60,26 +61,32 @@ while True:
         time.sleep(1)
 
     if client.isApiControlEnabled():
-        responses = client.simGetImages([airsim.ImageRequest(0, airsim.ImageType.Scene, False, False)])
-        for response in responses:
-            if response.pixels_as_float:
-                print("Type %d, size %d" % (response.image_type, len(response.image_data_float)))
-                airsim.write_pfm('py1.pfm', airsim.get_pfm_array(response))
-            else:
-                img1d = np.frombuffer(response.image_data_uint8, dtype=np.uint8) #get numpy array
-                img_rgb = img1d.reshape(response.height, response.width, 3) #reshape array to 3 channel image array H X W X 3
-                image = img_rgb[65:-25, :, :]
-                # image = cv2.cvtColor(image, cv2.COLOR_BGR2YUV)
-                image = cv2.resize(image, (IMG_WIDTH, IMG_HEIGHT), cv2.INTER_AREA)
-                image = transformations(image)
-                image = torch.Tensor(image)
-                image = image.view(1, 3, IMG_HEIGHT, IMG_WIDTH)
-                image = Variable(image)
-                output = model(image).view(-1).data.numpy()
+        if available_distance < 15:
+            car_controls.throttle = 0
+            car_controls.brake = 1
+            client.setCarControls(car_controls)
+        else:
+            car_controls.brake = 0
+        # responses = client.simGetImages([airsim.ImageRequest(0, airsim.ImageType.Scene, False, False)])
+        # for response in responses:
+        #     if response.pixels_as_float:
+        #         print("Type %d, size %d" % (response.image_type, len(response.image_data_float)))
+        #         airsim.write_pfm('py1.pfm', airsim.get_pfm_array(response))
+        #     else:
+        #         img1d = np.frombuffer(response.image_data_uint8, dtype=np.uint8) #get numpy array
+        #         img_rgb = img1d.reshape(response.height, response.width, 3) #reshape array to 3 channel image array H X W X 3
+        #         image = img_rgb[65:-25, :, :]
+        #         # image = cv2.cvtColor(image, cv2.COLOR_BGR2YUV)
+        #         image = cv2.resize(image, (IMG_WIDTH, IMG_HEIGHT), cv2.INTER_AREA)
+        #         image = transformations(image)
+        #         image = torch.Tensor(image)
+        #         image = image.view(1, 3, IMG_HEIGHT, IMG_WIDTH)
+        #         image = Variable(image)
+        #         output = model(image).view(-1).data.numpy()
 
-                car_controls.steering = float(output[0])
-                client.setCarControls(car_controls)
-                print(f"OUTPUT = {car_controls.steering}, {main_speed}, {main_brake}")
+        #         car_controls.steering = float(output[0])
+        #         client.setCarControls(car_controls)
+        #         print(f"OUTPUT = {car_controls.steering}, {main_speed}, {main_brake}")
 
         if client.isApiControlEnabled() and (car_state.speed > main_speed):
             car_controls.throttle = 0
